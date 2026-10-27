@@ -179,9 +179,10 @@ export function applyChoice(state: GameState, def: EventDef, choice: EventChoice
       text = choice.failureText || choice.outcomeText;
     }
   }
-  // The UI uses `cost` for affordability; effects handle the actual treasury change.
-  // Avoid charging twice when effects.treasury already includes the cost.
-  if (choice.cost && eff.treasury === undefined) {
+  // Most choices encode their cost as a negative treasury effect.
+  // If there is no treasury effect, or the effect is income, charge the displayed cost too.
+  // This preserves existing event data while preventing paid income choices from being free.
+  if (choice.cost && (eff.treasury === undefined || eff.treasury >= 0)) {
     next.economy.treasury -= choice.cost;
   }
   next = applyEffects(next, eff);
