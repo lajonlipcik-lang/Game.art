@@ -106,22 +106,22 @@ const clamp = (v: number, lo = 0, hi = 100) => Math.max(lo, Math.min(hi, v));
 export function isEventEligible(def: EventDef, state: GameState): boolean {
   const c = def.conditions;
   if (!c) return true;
-  if (c.minTurn && state.turn < c.minTurn) return false;
-  if (c.maxTurn && state.turn > c.maxTurn) return false;
-  if (c.minTreasury && state.economy.treasury < c.minTreasury) return false;
-  if (c.maxTreasury && state.economy.treasury > c.maxTreasury) return false;
-  if (c.minStability && state.stability < c.minStability) return false;
-  if (c.maxStability && state.stability > c.maxStability) return false;
-  if (c.minUnrest && state.unrest < c.minUnrest) return false;
-  if (c.minApproval && state.approval < c.minApproval) return false;
-  if (c.maxApproval && state.approval > c.maxApproval) return false;
-  if (c.minInflation && state.economy.inflation < c.minInflation) return false;
-  if (c.minUnemployment && state.economy.unemployment < c.minUnemployment) return false;
-  if (c.minDebt && state.economy.debt < c.minDebt) return false;
-  if (c.minArmyStrength && state.military.armyStrength < c.minArmyStrength) return false;
-  if (c.maxArmyStrength && state.military.armyStrength > c.maxArmyStrength) return false;
-  if (c.minSecurity && state.military.security < c.minSecurity) return false;
-  if (c.maxSecurity && state.military.security > c.maxSecurity) return false;
+  if (c.minTurn !== undefined && state.turn < c.minTurn) return false;
+  if (c.maxTurn !== undefined && state.turn > c.maxTurn) return false;
+  if (c.minTreasury !== undefined && state.economy.treasury < c.minTreasury) return false;
+  if (c.maxTreasury !== undefined && state.economy.treasury > c.maxTreasury) return false;
+  if (c.minStability !== undefined && state.stability < c.minStability) return false;
+  if (c.maxStability !== undefined && state.stability > c.maxStability) return false;
+  if (c.minUnrest !== undefined && state.unrest < c.minUnrest) return false;
+  if (c.minApproval !== undefined && state.approval < c.minApproval) return false;
+  if (c.maxApproval !== undefined && state.approval > c.maxApproval) return false;
+  if (c.minInflation !== undefined && state.economy.inflation < c.minInflation) return false;
+  if (c.minUnemployment !== undefined && state.economy.unemployment < c.minUnemployment) return false;
+  if (c.minDebt !== undefined && state.economy.debt < c.minDebt) return false;
+  if (c.minArmyStrength !== undefined && state.military.armyStrength < c.minArmyStrength) return false;
+  if (c.maxArmyStrength !== undefined && state.military.armyStrength > c.maxArmyStrength) return false;
+  if (c.minSecurity !== undefined && state.military.security < c.minSecurity) return false;
+  if (c.maxSecurity !== undefined && state.military.security > c.maxSecurity) return false;
   if (c.difficulty && !c.difficulty.includes(state.difficulty)) return false;
   if (c.hasUpgrade && !state.upgrades.includes(c.hasUpgrade)) return false;
   if (c.notHasUpgrade && state.upgrades.includes(c.notHasUpgrade)) return false;
@@ -179,7 +179,9 @@ export function applyChoice(state: GameState, def: EventDef, choice: EventChoice
       text = choice.failureText || choice.outcomeText;
     }
   }
-  if (choice.cost) {
+  // The UI uses `cost` for affordability; effects handle the actual treasury change.
+  // Avoid charging twice when effects.treasury already includes the cost.
+  if (choice.cost && eff.treasury === undefined) {
     next.economy.treasury -= choice.cost;
   }
   next = applyEffects(next, eff);
