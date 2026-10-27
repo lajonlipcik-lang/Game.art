@@ -127,22 +127,26 @@ export function isEventEligible(def: EventDef, state: GameState): boolean {
   if (c.notHasUpgrade && state.upgrades.includes(c.notHasUpgrade)) return false;
   if (c.minGroupLoyalty) {
     for (const [gid, val] of Object.entries(c.minGroupLoyalty)) {
-      if (state.groups[gid as GroupId].loyalty < val!) return false;
+      const group = state.groups[gid as GroupId];
+      if (!group || group.loyalty < val!) return false;
     }
   }
   if (c.maxGroupLoyalty) {
     for (const [gid, val] of Object.entries(c.maxGroupLoyalty)) {
-      if (state.groups[gid as GroupId].loyalty > val!) return false;
+      const group = state.groups[gid as GroupId];
+      if (!group || group.loyalty > val!) return false;
     }
   }
   if (c.minCountryRelation) {
     for (const [cid, val] of Object.entries(c.minCountryRelation)) {
-      if (state.countries[cid].relation < val!) return false;
+      const country = state.countries[cid];
+      if (!country || country.relation < val!) return false;
     }
   }
   if (c.maxCountryRelation) {
     for (const [cid, val] of Object.entries(c.maxCountryRelation)) {
-      if (state.countries[cid].relation > val!) return false;
+      const country = state.countries[cid];
+      if (!country || country.relation > val!) return false;
     }
   }
   return true;
