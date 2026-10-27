@@ -118,32 +118,28 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const construct = useCallback((defId: string): boolean => {
-    let ok = false;
-    setState((prev) => {
-      if (!prev) return prev;
-      const res = buildBuilding(prev, defId);
-      if (!res.ok) {
-        setLastChoiceResult(res.reason || 'Невозможно построить');
-      }
-      ok = res.ok;
-      return res.state;
-    });
-    return ok;
-  }, []);
+    if (!state || state.ending) return false;
+    const res = buildBuilding(state, defId);
+    if (!res.ok) {
+      setLastChoiceResult(res.reason || 'Невозможно построить');
+      return false;
+    }
+    setState(res.state);
+    setLastChoiceResult(null);
+    return true;
+  }, [state]);
 
   const research = useCallback((upId: string): boolean => {
-    let ok = false;
-    setState((prev) => {
-      if (!prev) return prev;
-      const res = purchaseUpgrade(prev, upId);
-      if (!res.ok) {
-        setLastChoiceResult(res.reason || 'Невозможно исследовать');
-      }
-      ok = res.ok;
-      return res.state;
-    });
-    return ok;
-  }, []);
+    if (!state || state.ending) return false;
+    const res = purchaseUpgrade(state, upId);
+    if (!res.ok) {
+      setLastChoiceResult(res.reason || 'Невозможно исследовать');
+      return false;
+    }
+    setState(res.state);
+    setLastChoiceResult(null);
+    return true;
+  }, [state]);
 
   const changeTaxRate = useCallback((rate: number) => {
     setState((prev) => (prev ? setTaxRate(prev, rate) : prev));
@@ -155,21 +151,17 @@ export function GameProvider({ children }: { children: React.ReactNode }) {
 
   const diplomacy = useCallback(
     (countryId: string, action: 'trade' | 'sanctions' | 'aid' | 'improve'): boolean => {
-      let ok = false;
-      setState((prev) => {
-        if (!prev) return prev;
-        const res = diplomaticAction(prev, countryId, action);
-        if (!res.ok) {
-          setLastChoiceResult(res.reason || 'Невозможно');
-        } else {
-          setLastChoiceResult('Дипломатическое действие выполнено');
-        }
-        ok = res.ok;
-        return res.state;
-      });
-      return ok;
+      if (!state || state.ending) return false;
+      const res = diplomaticAction(state, countryId, action);
+      if (!res.ok) {
+        setLastChoiceResult(res.reason || 'Невозможно');
+        return false;
+      }
+      setState(res.state);
+      setLastChoiceResult('Дипломатическое действие выполнено');
+      return true;
     },
-    [],
+    [state],
   );
 
   const dismissResult = useCallback(() => {
